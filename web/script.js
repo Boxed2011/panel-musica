@@ -1,36 +1,61 @@
-// Cambia esto a la URL de tu app en Render
-const BOT_API_URL = "https://tu-app.onrender.com";
-const API_KEY = "Zyn0rX ツ 0124";
+// -----------------------------
+// Configuración
+// -----------------------------
+const API_URL = "https://panel-musica.onrender.com"; // Cambia esto por la URL pública de tu servicio en Render
+const API_KEY = "Zyn0rX ツ 0124"; // Debe coincidir con la API_KEY_SECRETA que pusiste en panel_api.py y Render
 
-const playButton = document.getElementById('play-button');
-const guildIdInput = document.getElementById('guild-id');
-const userIdInput = document.getElementById('user-id');
-const songQueryInput = document.getElementById('song-query');
-const statusElement = document.getElementById('status');
+// -----------------------------
+// Elementos del DOM
+// -----------------------------
+const guildInput = document.getElementById("guild_id");
+const userInput = document.getElementById("user_id");
+const queryInput = document.getElementById("query");
+const playButton = document.getElementById("play_button");
+const statusBox = document.getElementById("status");
 
-playButton.addEventListener('click', async () => {
-    const guildId = guildIdInput.value;
-    const userId = userIdInput.value;
-    const query = songQueryInput.value;
+// -----------------------------
+// Función para reproducir
+// -----------------------------
+async function reproducir() {
+    const guild_id = guildInput.value.trim();
+    const user_id = userInput.value.trim();
+    const query = queryInput.value.trim();
 
-    if (!guildId || !userId || !query) {
-        statusElement.textContent = "Error: Rellena todos los campos.";
+    if (!guild_id || !user_id || !query) {
+        statusBox.textContent = "⚠️ Completa todos los campos.";
         return;
     }
-    statusElement.textContent = "Enviando orden...";
+
+    statusBox.textContent = "🔄 Conectando al bot...";
+
     try {
-        const response = await fetch(`${BOT_API_URL}/play`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': API_KEY },
-            body: JSON.stringify({ guild_id: guildId, user_id: userId, query: query })
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": API_KEY
+            },
+            body: JSON.stringify({
+                guild_id: guild_id,
+                user_id: user_id,
+                query: query
+            })
         });
-        const result = await response.json();
+
+        const data = await response.json();
+
         if (response.ok) {
-            statusElement.textContent = `Éxito: ${result.message}`;
+            statusBox.textContent = `✅ ${data.message}`;
         } else {
-            statusElement.textContent = `Error: ${result.error || 'Error desconocido'}`;
+            statusBox.textContent = `❌ Error: ${data.error}`;
         }
-    } catch (error) {
-        statusElement.textContent = "Error: No se pudo conectar al bot.";
+    } catch (err) {
+        console.error(err);
+        statusBox.textContent = "❌ No se pudo conectar al bot.";
     }
-});
+}
+
+// -----------------------------
+// Evento del botón
+// -----------------------------
+playButton.addEventListener("click", reproducir);
